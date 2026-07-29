@@ -5,11 +5,85 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  TECNICO
+  ADMIN
+}
+
+enum TicketStatus {
+  ABIERTO
+  EN_PROGRESO
+  RESUELTO
+  CERRADO
+}
+
+enum Priority {
+  BAJA
+  MEDIA
+  ALTA
+  CRITICA
+}
+
+model User {
+  id String @id @default(uuid())
+  nombre String
+  email String @unique
+  password String
+  role Role @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  activo Boolean @default(true)
+
+  ticketsCreados Ticket[] @relation("Creador")
+  ticketsTecnicos Ticket[] @relation("Tecnico")
+  comentarios Comment[]
+}
+
+model Category {
+  id String @id @default(uuid())
+  nombre String @unique
+  activo Boolean @default(true)
+  tickets Ticket[]
+}
+
+model Ticket {
+  id String @id @default(uuid())
+  titulo String
+  descripcion String
+  status TicketStatus @default(ABIERTO)
+  priority Priority @default(MEDIA)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  resueltoAt DateTime?
+
+  creador User @relation("Creador", fields: [creadorId], references: [id])
+  creadorId String
+
+  tecnico User? @relation("Tecnico", fields: [tecnicoId], references: [id])
+  tecnicoId String?
+
+  categoria Category @relation(fields: [categoriaId], references: [id])
+  categoriaId String
+  comentarios Comment[]
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  contenido String
+  createdAt DateTime @default(now())
+
+  autor   User   @relation(fields: [autorId], references: [id])
+  autorId String
+
+  ticket   Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  ticketId String
 }
