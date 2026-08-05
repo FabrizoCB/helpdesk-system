@@ -17,3 +17,8 @@ export const registroSchema = z.object({
     .min(8, 'La contraseña debe tener al menos 8 caracteres')
     .max(72, 'La contraseña no puede superar los 72 caracteres'),
 });
+
+export const loginSchema = z.object({
+    email: z.email('El email no es valido').toLowerCase().trim(),
+    password: z.string().min(1, 'La contraseña es obligatoria'),
+});
